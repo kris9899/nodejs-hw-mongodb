@@ -20,7 +20,7 @@ export const setupServer = () => {
       },
     }),
   );
-
+  app.set('json spaces', 2);
   app.get('/contacts', async (req, res) => {
     const contacts = await getAllContacts();
 
