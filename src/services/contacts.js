@@ -16,8 +16,8 @@ export const getAllContacts = async ({
   if (filter.isFavourite) {
     contactsQuery.where('isFavourite').equals(filter.isFavourite);
   }
-  if (filter.type) {
-    contactsQuery.where('type').equals(filter.type);
+  if (filter.contactType) {
+    contactsQuery.where('contactType').equals(filter.contactType);
   }
 
   const contactsCount = await contactsQuery.clone().countDocuments();
