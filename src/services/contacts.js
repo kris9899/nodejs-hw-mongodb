@@ -24,10 +24,6 @@ export const getAllContacts = async ({
     contactsQuery.where('name').regex(new RegExp(filter.name, 'i'));
   }
 
-  if (filter.userId) {
-    contactsQuery.where('userId').equals(filter.userId);
-  }
-
   const contactsCount = await contactsQuery.clone().countDocuments();
 
   const contacts = await contactsQuery
