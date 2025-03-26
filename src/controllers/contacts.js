@@ -106,7 +106,7 @@ export const patchContactController = async (req, res) => {
     throw createHttpError(404, 'Contact not found');
   }
 
-  res.json({
+  res.statys(200).json({
     status: 200,
     message: 'Successfully patched a contact',
     data: result.data,
