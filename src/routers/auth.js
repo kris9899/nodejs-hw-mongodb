@@ -11,8 +11,6 @@ import {
 import { validateBody } from '../middlewares/validateBody.js';
 import { loginUserSchema } from '../validation/auth.js';
 
-import {} from '../controllers/auth.js';
-
 const router = Router();
 
 router.post(
