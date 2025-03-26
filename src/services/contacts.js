@@ -21,17 +21,15 @@ export const getAllContacts = async ({
   if (filter.isFavourite) {
     contactsQuery.where('isFavourite').equals(filter.isFavourite);
   }
-
-  const [contactsCount, contacts] = await Promise.all([
-    ContactsCollection.find({ userId: filter.userId })
-      .merge(contactsQuery)
-      .countDocuments(),
-    contactsQuery
-      .skip(skip)
-      .limit(limit)
-      .sort({ [sortBy]: sortOrder })
-      .exec(),
-  ]);
+  const contactsCount = await ContactsCollection.countDocuments({
+    userId: filter.userId,
+    ...filter,
+  });
+  const contacts = await contactsQuery
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder })
+    .exec();
 
   const paginationData = calculatePaginationData(contactsCount, page, perPage);
 
