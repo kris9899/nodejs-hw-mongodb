@@ -11,7 +11,7 @@ import {
 
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
-import { isValidId } from '../middlewares/IsValidId.js';
+import { isValidId } from '../middlewares/isValidId.js';
 import { authenticate } from '../middlewares/authenticate.js';
 
 import {
@@ -37,7 +37,7 @@ router.delete('/:contactId', isValidId, ctrlWrapper(deleteContactController));
 router.put(
   '/:contactId',
   isValidId,
-  validateBody(createContactSchema),
+  validateBody(updateContactSchema),
   ctrlWrapper(upsertContactController),
 );
 router.patch(

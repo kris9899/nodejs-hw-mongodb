@@ -3,6 +3,7 @@ import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 import { SORT_ORDER } from '../constants/index.js';
 
 export const getAllContacts = async ({
+  userId,
   page = 1,
   perPage = 10,
   sortOrder = SORT_ORDER.ASC,
@@ -55,9 +56,10 @@ export const deleteContact = async (contactId, userId) => {
 };
 
 export const updateContact = async (
+  userId,
   contactId,
   payload,
-  { userId, upsert = false } = {},
+  options = {},
 ) => {
   const rawResult = await ContactsCollection.findOneAndUpdate(
     { _id: contactId, userId },
