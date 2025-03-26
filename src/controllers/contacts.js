@@ -64,7 +64,7 @@ export const deleteContactController = async (req, res) => {
   const { contactId: _id } = req.params;
   const userId = req.user._id;
 
-  const contact = await deleteContact(_id, userId);
+  const contact = await deleteContact({ _id, userId });
 
   if (!contact) {
     throw createHttpError(404, 'Contact not found');
@@ -73,11 +73,22 @@ export const deleteContactController = async (req, res) => {
 };
 
 export const upsertContactController = async (req, res) => {
-  const { id } = req.params;
+  const { contactId: _id } = req.params;
   const userId = req.user._id;
 
+  if (_id) {
+    const existingContact = await getContactById({ _id, userId });
+
+    if (!existingContact) {
+      throw createHttpError(
+        403,
+        'You do not have permission to update this contact.',
+      );
+    }
+  }
+
   const { isNew, data } = await updateContact(
-    id,
+    { _id, userId },
     { userId, ...req.body },
     {
       upsert: true,
