@@ -11,7 +11,11 @@ export const getAllContacts = async ({
 }) => {
   const skip = (page - 1) * perPage;
 
-  const contactsQuery = ContactsCollection.find(filter);
+  if (!filter.userId) {
+    throw new Error('User ID is required to fetch contacts.');
+  }
+
+  const contactsQuery = ContactsCollection.find({ userId: filter.userId });
 
   if (filter.type) {
     contactsQuery.where('contactType').equals(filter.type);
@@ -20,11 +24,9 @@ export const getAllContacts = async ({
   if (filter.isFavourite) {
     contactsQuery.where('isFavourite').equals(filter.isFavourite);
   }
+
   if (filter.name) {
     contactsQuery.where('name').regex(new RegExp(filter.name, 'i'));
-  }
-  if (filter.userId) {
-    contactsQuery.where('userId').equals(filter.userId);
   }
 
   const contactsCount = await contactsQuery.clone().countDocuments();
