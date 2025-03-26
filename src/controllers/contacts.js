@@ -88,7 +88,7 @@ export const upsertContactController = async (req, res) => {
   }
 
   const { isNew, data } = await updateContact(
-    _id,
+    { _id, userId },
     { userId, ...req.body },
     {
       upsert: true,
