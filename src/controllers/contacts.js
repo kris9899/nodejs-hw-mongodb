@@ -76,17 +76,6 @@ export const upsertContactController = async (req, res) => {
   const { contactId: _id } = req.params;
   const userId = req.user._id;
 
-  if (_id) {
-    const existingContact = await getContactById({ _id, userId });
-
-    if (!existingContact) {
-      throw createHttpError(
-        403,
-        'You do not have permission to update this contact.',
-      );
-    }
-  }
-
   const { isNew, data } = await updateContact(
     { _id, userId },
     { userId, ...req.body },
