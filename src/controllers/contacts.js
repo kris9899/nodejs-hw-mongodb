@@ -1,3 +1,6 @@
+import * as fs from 'node:fs/promises';
+import path from 'path';
+
 import {
   getAllContacts,
   getContactById,
@@ -5,6 +8,9 @@ import {
   deleteContact,
   updateContact,
 } from '../services/contacts.js';
+
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+
 import createHttpError from 'http-errors';
 
 import { parseFilterParams } from '../utils/parseFilterParams.js';
@@ -97,13 +103,25 @@ export const upsertContactController = async (req, res) => {
   });
 };
 
-export const patchContactController = async (req, res) => {
+export const patchContactController = async (req, res, next) => {
   const { contactId: _id } = req.params;
   const userId = req.user._id;
-  const result = await updateContact({ _id, userId }, req.body);
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    photoUrl = await saveFileToUploadDir(photo);
+  }
+
+  const result = await updateContact(
+    { _id, userId },
+    { ...req.body, photo: photoUrl },
+  );
 
   if (!result) {
-    throw createHttpError(404, 'Contact not found');
+    next(createHttpError(404, 'Contact not found'));
+    return;
   }
 
   res.status(200).json({

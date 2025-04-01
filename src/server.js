@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import router from './routers/index.js';
+import { UPLOAD_DIR } from './constants/index.js';
 
 import { getEnvVar } from './utils/getEnvVar.js';
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -37,3 +38,5 @@ export const setupServer = () => {
     console.log(`Server is running on port ${PORT}`);
   });
 };
+
+app.use('/uploads', express.static(UPLOAD_DIR));
