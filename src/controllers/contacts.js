@@ -54,16 +54,35 @@ export const getContactByIdController = async (req, res) => {
   });
 };
 
-export const createContactController = async (req, res) => {
-  const userId = req.user._id;
+export const createContactController = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const photo = req.file;
 
-  const contact = await createContact({ userId, ...req.body });
+    let photoUrl = null;
 
-  res.status(201).json({
-    status: 201,
-    message: 'Successfully created a contact!',
-    data: contact,
-  });
+    if (photo) {
+      try {
+        photoUrl = await saveFileToUploadDir(photo);
+      } catch (err) {
+        return next(createHttpError(500, 'Failed to save the file.'));
+      }
+    }
+
+    const contact = await createContact({
+      userId,
+      ...req.body,
+      photo: photoUrl,
+    });
+
+    res.status(201).json({
+      status: 201,
+      message: 'Successfully created a contact!',
+      data: contact,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const deleteContactController = async (req, res) => {
