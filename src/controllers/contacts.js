@@ -1,6 +1,4 @@
-import * as fs from 'node:fs/promises';
-import path from 'path';
-
+import { getEnvVar } from '../utils/getEnvVar.js';
 import {
   getAllContacts,
   getContactById,
@@ -10,7 +8,7 @@ import {
 } from '../services/contacts.js';
 
 import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
-
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import createHttpError from 'http-errors';
 
 import { parseFilterParams } from '../utils/parseFilterParams.js';
@@ -59,13 +57,13 @@ export const createContactController = async (req, res, next) => {
     const userId = req.user._id;
     const photo = req.file;
 
-    let photoUrl = null;
+    let photoUrl;
 
     if (photo) {
-      try {
+      if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
         photoUrl = await saveFileToUploadDir(photo);
-      } catch (err) {
-        return next(createHttpError(500, 'Failed to save the file.'));
       }
     }
 
@@ -100,10 +98,22 @@ export const deleteContactController = async (req, res) => {
 export const upsertContactController = async (req, res) => {
   const { contactId: _id } = req.params;
   const userId = req.user._id;
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
 
   const { isNew, data } = await updateContact(
     { _id, userId },
     { userId, ...req.body },
+    { ...req.body, photo: photoUrl },
     {
       upsert: true,
     },
@@ -130,7 +140,11 @@ export const patchContactController = async (req, res, next) => {
   let photoUrl;
 
   if (photo) {
-    photoUrl = await saveFileToUploadDir(photo);
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
   }
 
   const result = await updateContact(
