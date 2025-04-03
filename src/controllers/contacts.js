@@ -1,3 +1,4 @@
+import { getEnvVar } from '../utils/getEnvVar.js';
 import {
   getAllContacts,
   getContactById,
@@ -5,6 +6,9 @@ import {
   deleteContact,
   updateContact,
 } from '../services/contacts.js';
+
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import createHttpError from 'http-errors';
 
 import { parseFilterParams } from '../utils/parseFilterParams.js';
@@ -48,16 +52,35 @@ export const getContactByIdController = async (req, res) => {
   });
 };
 
-export const createContactController = async (req, res) => {
-  const userId = req.user._id;
+export const createContactController = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const photo = req.file;
 
-  const contact = await createContact({ userId, ...req.body });
+    let photoUrl;
 
-  res.status(201).json({
-    status: 201,
-    message: 'Successfully created a contact!',
-    data: contact,
-  });
+    if (photo) {
+      if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
+    }
+
+    const contact = await createContact({
+      userId,
+      ...req.body,
+      photo: photoUrl,
+    });
+
+    res.status(201).json({
+      status: 201,
+      message: 'Successfully created a contact!',
+      data: contact,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const deleteContactController = async (req, res) => {
@@ -75,21 +98,22 @@ export const deleteContactController = async (req, res) => {
 export const upsertContactController = async (req, res) => {
   const { contactId: _id } = req.params;
   const userId = req.user._id;
+  const photo = req.file;
 
-  if (_id) {
-    const existingContact = await getContactById({ _id, userId });
+  let photoUrl;
 
-    if (!existingContact) {
-      throw createHttpError(
-        403,
-        'You do not have permission to update this contact.',
-      );
+  if (photo) {
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
     }
   }
 
   const { isNew, data } = await updateContact(
     { _id, userId },
     { userId, ...req.body },
+    { ...req.body, photo: photoUrl },
     {
       upsert: true,
     },
@@ -108,13 +132,29 @@ export const upsertContactController = async (req, res) => {
   });
 };
 
-export const patchContactController = async (req, res) => {
+export const patchContactController = async (req, res, next) => {
   const { contactId: _id } = req.params;
   const userId = req.user._id;
-  const result = await updateContact({ _id, userId }, req.body);
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
+  const result = await updateContact(
+    { _id, userId },
+    { ...req.body, photo: photoUrl },
+  );
 
   if (!result) {
-    throw createHttpError(404, 'Contact not found');
+    next(createHttpError(404, 'Contact not found'));
+    return;
   }
 
   res.status(200).json({
