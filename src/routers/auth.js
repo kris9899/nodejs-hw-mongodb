@@ -18,7 +18,7 @@ import {
 } from '../controllers/auth.js';
 
 import { validateBody } from '../middlewares/validateBody.js';
-import { loginUserSchema, resetPasswordSchema } from '../validation/auth.js';
+import { resetPasswordSchema } from '../validation/auth.js';
 
 const router = Router();
 
