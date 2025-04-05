@@ -54,7 +54,7 @@ router.post(
 router.get('/get-oauth-url', ctrlWrapper(getGoogleOAuthUrlController));
 
 router.post(
-  '/confirm-ouath',
+  '/confirm-oauth',
   validateBody(loginWithGoogleOAuthSchema),
   ctrlWrapper(loginWithGoogleController),
 );
