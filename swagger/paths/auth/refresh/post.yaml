@@ -1,0 +1,35 @@
+tags:
+  - Auth
+summary: Refresh access token
+operationId: refreshUser
+description: Endpoint to refresh expired access token using refresh token
+security: []
+responses:
+  '200':
+    description: Successfully refreshed access token with new session
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+            message:
+              type: string
+              example: Successfully refreshed a session!
+            data:
+              type: object
+              required:
+                - accessToken
+              properties:
+                accessToken:
+                  description: 'Random string in the base64 encoding'
+                  type: string
+                  example: 'a7zIjsCX/35SI9Pq6X7ZIVNFgZVg/zhSEb4MlS33'
+  '401':
+    $ref: ../../../components/responses/401.yaml

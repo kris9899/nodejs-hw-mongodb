@@ -1,0 +1,19 @@
+type: object
+required:
+  - name
+  - email
+  - password
+properties:
+  name:
+    description: 'User name'
+    type: string
+    example: 'Test'
+  email:
+    description: 'User email address'
+    type: string
+    example: 'test@gmail.com'
+  password:
+    description: 'User password'
+    type: string
+    format: password
+    writeOnly: true
